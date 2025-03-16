@@ -6,13 +6,11 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-# OAuth 2.0 credentials file
-OAUTH_JSON_FILE = "client_secret_958685323616-7obpl47h7ie74d6f8i1paapt6qvi3acf.apps.googleusercontent.com.json"
-
 # Google Drive API scopes
 SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
 
 CONFIG_PATH = "~/.gdlink-target/config.json"
+TOKEN_PATH = "~/.gdlink-target/token.json"
 
 
 def read_gdlink_file_id(file_path):
@@ -25,7 +23,7 @@ def read_gdlink_file_id(file_path):
 def authenticate_drive():
     """Authenticate using OAuth 2.0 and return Google Drive service."""
     creds = None
-    token_file = os.path.expanduser("~/.gdlink-target/token.json")
+    token_file = os.path.expanduser(TOKEN_PATH)
 
     # Load saved credentials if they exist
     if os.path.exists(token_file):
@@ -35,17 +33,23 @@ def authenticate_drive():
 
     # If credentials are not available or invalid, authenticate
     if not creds:
-        flow = InstalledAppFlow.from_client_secrets_file(OAUTH_JSON_FILE, SCOPES)
-        creds = flow.run_local_server(port=0)
-
-        # create "~/.gdlink-target"
-        os.makedirs(os.path.dirname(token_file), exist_ok=True)
-
-        # Save credentials for future use
-        with open(token_file, "w") as token:
-            token.write(creds.to_json())
+        print("You need to connect with your Google Drive first, see readme")
+        exit(-1)
 
     return build("drive", "v3", credentials=creds)
+
+
+def client_secret(client_secret_file_path):
+    token_file = os.path.expanduser(TOKEN_PATH)
+    flow = InstalledAppFlow.from_client_secrets_file(client_secret_file_path, SCOPES)
+    creds = flow.run_local_server(port=0)
+
+    # create "~/.gdlink-target"
+    os.makedirs(os.path.dirname(token_file), exist_ok=True)
+
+    # Save credentials for future use
+    with open(token_file, "w") as token:
+        token.write(creds.to_json())
 
 
 def get_actual_file_id(service, file_id):
@@ -84,7 +88,14 @@ def main():
     parser = argparse.ArgumentParser(description="Target folder of gdlink file")
     parser.add_argument("gdlink_file_path", help="Path to gdlink file")
     parser.add_argument("--parent", action='store_true', help="Return parent directory")
+    parser.add_argument("--client_secret", action='store_true', help="Google Drive OAuth2.0 client-secret file for initial authentication")
     args = parser.parse_args()
+
+    if args.client_secret:
+        client_secret_file_path = args.gdlink_file_path
+        client_secret(client_secret_file_path)
+        print("Done, you can now use gdlink")
+        exit(-1)
 
     file_id = read_gdlink_file_id(args.gdlink_file_path)
 
