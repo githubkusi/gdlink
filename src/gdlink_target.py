@@ -12,6 +12,8 @@ OAUTH_JSON_FILE = "client_secret_958685323616-7obpl47h7ie74d6f8i1paapt6qvi3acf.a
 # Google Drive API scopes
 SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
 
+CONFIG_PATH = "~/.gdlink-target/config.json"
+
 
 def read_gdlink_file_id(file_path):
     """Read JSON data from a file and extract the file_id."""
@@ -72,6 +74,12 @@ def get_file_path(service, file_id):
     return "/".join(path)
 
 
+def get_gd_root():
+    with open(os.path.expanduser(CONFIG_PATH), "r") as config_file:
+        config = json.load(config_file)
+    return config['gd_root']
+
+
 def main():
     parser = argparse.ArgumentParser(description="Target folder of gdlink file")
     parser.add_argument("gdlink_file_path", help="Path to gdlink file")
@@ -91,6 +99,8 @@ def main():
 
     cleaned_path = "/".join(relative_path.split("/")[1:-1])
     print(cleaned_path)
+
+    print(os.path.join(get_gd_root(), cleaned_path))
 
 
 if __name__ == "__main__":
