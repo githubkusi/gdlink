@@ -16,7 +16,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'gdlink-target=src.gdlink_target:main',  # This allows you to run the script as a command
+            'gdlink=src.gdlink_target:main',  # This allows you to run the script as a command
         ],
     },
     python_requires='>=3.6',  # Specify the Python version required

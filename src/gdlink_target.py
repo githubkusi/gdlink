@@ -83,6 +83,7 @@ def get_gd_root():
 def main():
     parser = argparse.ArgumentParser(description="Target folder of gdlink file")
     parser.add_argument("gdlink_file_path", help="Path to gdlink file")
+    parser.add_argument("--parent", action='store_true', help="Return parent directory")
     args = parser.parse_args()
 
     file_id = read_gdlink_file_id(args.gdlink_file_path)
@@ -97,8 +98,9 @@ def main():
     # Get the relative path of the target file
     relative_path = get_file_path(service, actual_file_id)
 
-    cleaned_path = "/".join(relative_path.split("/")[1:-1])
-    print(cleaned_path)
+    cleaned_path = "/".join(relative_path.split("/")[1:])
+    if args.parent:
+        cleaned_path = "/".join(cleaned_path.split("/")[:-1])
 
     print(os.path.join(get_gd_root(), cleaned_path))
 
